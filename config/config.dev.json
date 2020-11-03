@@ -1,5 +1,11 @@
-{
-    "blacklist_domains": [
-        "zen.spamhaus.org"
-    ]
+{ 
+    "db": {
+        "db_type": "sqlite3",
+        "db_name": "./coding_challenge.db"
+    },
+    "dnsbl": {
+        "blacklist_domains": [
+            "zen.spamhaus.org"
+        ]
+    }
 }

@@ -2,6 +2,7 @@ package dnsbl
 
 import (
 	//"encoding/json"
+	"github.com/egreen64/codingchallenge/config"
 	"github.com/nerdbaggy/godnsbl"
 )
 
@@ -17,9 +18,9 @@ type Dnsbl struct {
 }
 
 //NewDnsbl - Create DNS BlackList instance
-func NewDnsbl(domains []string) *Dnsbl {
+func NewDnsbl(config *config.File) *Dnsbl {
 	dnsbl := Dnsbl{
-		blackListDomains: domains,
+		blackListDomains: config.Dnsbl.BlacklistDomains,
 	}
 	return &dnsbl
 }
