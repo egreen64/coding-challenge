@@ -1,0 +1,5 @@
+{
+    "blacklist_domains": [
+        "zen.spamhaus.org"
+    ]
+}
