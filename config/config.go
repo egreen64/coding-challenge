@@ -2,11 +2,13 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/egreen64/codingchallenge/utils"
 )
 
 var config File
@@ -49,13 +51,8 @@ func GetConfig() *File {
 func findConfig() string {
 
 	//go_config overrides any config
-	if c := os.Getenv("go_config"); c != "" {
+	if c := os.Getenv("GO_CONFIG"); c != "" {
 		return c
-	}
-
-	appenv := "dev"
-	if _env := os.Getenv("APP_ENV"); _env != "" {
-		appenv = _env
 	}
 
 	cwd, err := os.Getwd()
@@ -63,19 +60,30 @@ func findConfig() string {
 		panic(err)
 	}
 
-	pattern := filepath.Join(cwd, "config", "config.*.json")
-	files, err := filepath.Glob(pattern)
-	if err != nil {
+	configPath := filepath.Join(cwd, "config.json")
+	log.Printf("configPath: %s\n", configPath)
+	if !utils.FileExists(configPath) {
+		err := errors.New("config.json file not found")
 		panic(err)
 	}
 
-	configPath := ""
-	for _, file := range files {
-		base := filepath.Base(file)
-		if strings.Contains(base, appenv) {
-			configPath = file
-		}
-	}
-
 	return configPath
+}
+
+//File struct
+type File struct {
+	Database Database `json:"db"`
+	Dnsbl    Dnsbl    `json:"dnsbl"`
+}
+
+//Database type
+type Database struct {
+	Persist bool   `json:"persist"`
+	DbType  string `json:"db_type"`
+	DbPath  string `json:"db_path"`
+}
+
+//Dnsbl type
+type Dnsbl struct {
+	BlacklistDomains []string `json:"blacklist_domains"`
 }

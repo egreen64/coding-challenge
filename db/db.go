@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"github.com/egreen64/codingchallenge/config"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/egreen64/codingchallenge/utils"
+
+	_ "github.com/mattn/go-sqlite3" //Required for sql driver registration
 )
 
 //Database type
@@ -14,19 +17,38 @@ type Database struct {
 	db *sql.DB
 }
 
+//DNSBlacklistRecord type
+type DNSBlacklistRecord struct {
+	ID           string
+	IPAddress    string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	ResponseCode string
+}
+
 //NewDatabase instantiate database instance
 func NewDatabase(config *config.File) *Database {
-	log.Printf("Database Type: %s, Database Name: %s\n", config.Database.DbType, config.Database.DbName)
-	db, err := sql.Open(config.Database.DbType, config.Database.DbName)
+	log.Printf("Database Type: %s, Database Name: %s\n", config.Database.DbType, config.Database.DbPath)
+
+	if !config.Database.Persist {
+		os.Remove(config.Database.DbPath)
+	}
+
+	db, err := sql.Open(config.Database.DbType, config.Database.DbPath)
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
 		// another initialization error.
 		log.Fatal("unable to use data source name", err)
 	}
-	if !dbExists(config.Database.DbName) {
+	if !utils.FileExists(config.Database.DbPath) {
 		sqlStmt := `
-		create table foo (id integer not null primary key, name text);
-		delete from foo;
+			CREATE TABLE IF NOT EXISTS dns_blacklist (
+				ip_address TEXT PRIMARY KEY NOT NULL, 
+				id TEXT NOT NULL, 
+				response_code text,
+				created_at DATETIME CURRENT_TIMESTAMP, 
+				updated_at DATETIME CURRENT_TIMESTAMP
+			);
 		`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
@@ -37,14 +59,118 @@ func NewDatabase(config *config.File) *Database {
 	dbi := Database{
 		db: db,
 	}
-	defer db.Close()
+	//defer db.Close()
 	return &dbi
 }
 
-func dbExists(dbName string) bool {
-	info, err := os.Stat(dbName)
-	if os.IsNotExist(err) {
-		return false
+//CloseDatabase function
+func (db *Database) CloseDatabase() {
+	db.db.Close()
+}
+
+//UpsertRecord function
+func (db *Database) UpsertRecord(record *DNSBlacklistRecord) error {
+
+	sqlStmt := `
+		INSERT INTO dns_blacklist(
+			id,
+			ip_address,
+			response_code,
+			created_at,
+			updated_at
+		) values(?, ?, ?, ?, ?)
+		ON CONFLICT(ip_address) DO UPDATE SET
+			response_code = ?,
+			updated_at = ?
+	`
+
+	stmt, err := db.db.Prepare(sqlStmt)
+	if err != nil {
+		panic(err)
 	}
-	return !info.IsDir()
+
+	defer stmt.Close()
+
+	currentTime := time.Now().Format(time.RFC3339)
+	_, err = stmt.Exec(record.ID, record.IPAddress, record.ResponseCode, currentTime, currentTime, record.ResponseCode, currentTime)
+	if err != nil {
+		log.Printf("insert error: %s\n", err)
+	}
+
+	return err
+}
+
+//SelectRecord function
+func (db *Database) SelectRecord(ipAddress string) (*DNSBlacklistRecord, error) {
+	sqlStmt := `
+		SELECT
+			id,
+			ip_address,
+			response_code,
+			created_at,
+			updated_at
+		FROM dns_blacklist 
+		WHERE ip_address = ?
+	`
+
+	stmt, err := db.db.Prepare(sqlStmt)
+	if err != nil {
+		panic(err)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(ipAddress)
+	if err != nil {
+		log.Printf("select error: %s\n", err)
+	}
+	var dblRec DNSBlacklistRecord
+	var createdAt string
+	var updatedAt string
+
+	err = db.db.QueryRow(sqlStmt, ipAddress).Scan(
+		&dblRec.ID,
+		&dblRec.IPAddress,
+		&dblRec.ResponseCode,
+		&createdAt,
+		&updatedAt,
+	)
+
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("no row with id %s\n", ipAddress)
+		return nil, err
+	case err != nil:
+		log.Fatalf("query error: %v\n", err)
+	default:
+		dblRec.CreatedAt, _ = time.Parse(time.RFC3339, createdAt)
+		dblRec.UpdatedAt, _ = time.Parse(time.RFC3339, updatedAt)
+	}
+
+	return &dblRec, nil
+}
+
+//UpdateRecord function
+func (db *Database) UpdateRecord(record *DNSBlacklistRecord) error {
+	sqlStmt := `
+	UPDATE dns_blacklist set
+		response_code = ?,
+		updated_at = ?
+		where ip_address = ?
+	`
+
+	stmt, err := db.db.Prepare(sqlStmt)
+	if err != nil {
+		panic(err)
+	}
+
+	defer stmt.Close()
+
+	currentTime := time.Now().Format(time.RFC3339)
+	_, err = stmt.Exec(record.ResponseCode, currentTime, record.IPAddress)
+	if err != nil {
+		log.Printf("update error: %s\n", err)
+	}
+
+	return err
 }

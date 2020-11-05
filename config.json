@@ -1,7 +1,8 @@
 { 
     "db": {
         "db_type": "sqlite3",
-        "db_name": "./coding_challenge.db"
+        "db_path": "./coding_challenge.db",
+        "persist": true
     },
     "dnsbl": {
         "blacklist_domains": [
