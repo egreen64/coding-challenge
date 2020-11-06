@@ -63,7 +63,7 @@ func main() {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver}))
 
 	//Initialize graphql handler functions
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	http.Handle("/graphql", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
 	//Initialize listening port
