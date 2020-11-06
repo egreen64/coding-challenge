@@ -68,7 +68,7 @@ func ValidateJWT(tokenString string, username string, password string) (bool, er
 	return true, nil
 }
 
-// Middleware decodes the share session cookie and packs the session into context
+//Middleware decodes the share session cookie and packs the session into context
 func Middleware(config *config.File) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

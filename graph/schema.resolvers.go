@@ -5,8 +5,6 @@ package graph
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/egreen64/codingchallenge/auth"
@@ -14,11 +12,12 @@ import (
 	"github.com/egreen64/codingchallenge/graph/model"
 	"github.com/egreen64/codingchallenge/utils"
 	"github.com/google/uuid"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) Authenticate(ctx context.Context, username string, password string) (string, error) {
 	if username != r.Config.Auth.Username || password != r.Config.Auth.Password {
-		return "", errors.New("invalid credentials")
+		return "", gqlerror.Errorf("invalid credentials")
 	}
 
 	tokenString, err := auth.CreateJWT(username, password)
@@ -28,20 +27,19 @@ func (r *mutationResolver) Authenticate(ctx context.Context, username string, pa
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, error) {
 	authToken := auth.GetContextToken(ctx)
 	if authToken == "" {
-		return nil, errors.New("not authorized")
+		return nil, gqlerror.Errorf("missing auth token")
 	}
 
 	tokenString := strings.TrimPrefix(authToken, "Bearer ")
 	valid, err := auth.ValidateJWT(tokenString, r.Config.Auth.Username, r.Config.Auth.Password)
 
 	if !valid || err != nil {
-		return nil, errors.New("not authorized")
+		return nil, gqlerror.Errorf("not authorized")
 	}
 
 	for _, ipAddr := range ip {
 		if !utils.IsValidIPV4Address(ipAddr) {
-			errorString := fmt.Sprintf("Invalid IPV4 address: %s", ip)
-			return nil, errors.New(errorString)
+			return nil, gqlerror.Errorf("Invalid IPV4 address: %s", ip)
 		}
 		resp := r.DNSBL.Lookup(ipAddr)
 
@@ -67,19 +65,18 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 func (r *queryResolver) GetIPDetails(ctx context.Context, ip *string) (*model.DNSBlockListRecord, error) {
 	authToken := auth.GetContextToken(ctx)
 	if authToken == "" {
-		return nil, errors.New("not authorized")
+		return nil, gqlerror.Errorf("missing auth token")
 	}
 
 	tokenString := strings.TrimPrefix(authToken, "Bearer ")
 	valid, err := auth.ValidateJWT(tokenString, r.Config.Auth.Username, r.Config.Auth.Password)
 
 	if !valid || err != nil {
-		return nil, errors.New("not authorized")
+		return nil, gqlerror.Errorf("not authorized")
 	}
 
 	if !utils.IsValidIPV4Address(*ip) {
-		errorString := fmt.Sprintf("Invalid IPV4 address: %s", *ip)
-		return nil, errors.New(errorString)
+		return nil, gqlerror.Errorf("Invalid IPV4 address: %s", *ip)
 	}
 
 	dblRec, _ := r.Database.SelectRecord(*ip)
