@@ -20,12 +20,11 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
 
+	//Read config file
 	config := config.GetConfig()
+
+	//Initialize Database
 	database := db.NewDatabase(config)
 
 	//Instantiate DNS Blocklist instance
@@ -35,8 +34,11 @@ func main() {
 		Database: database,
 		DNSBL:    dnsbl,
 	}
+
+	//Obtain main context
 	mainCtx, shutdown := context.WithCancel(context.Background())
 
+	//Create termination signal channel
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 
@@ -57,11 +59,20 @@ func main() {
 		os.Exit(1)
 	}()
 
+	//Instantiate graphql server
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver}))
 
+	//Initialize graphql handler functions
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
+	//Initialize listening port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	//Start server on listening port
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
