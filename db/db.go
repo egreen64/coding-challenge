@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -21,7 +22,7 @@ type Database struct {
 
 //NewDatabase instantiate database instance
 func NewDatabase(config *config.File) *Database {
-	log.Printf("database Type: %s, Database Name: %s\n", config.Database.DbType, config.Database.DbPath)
+	log.Printf("opening database type: %s, database name: %s\n", config.Database.DbType, config.Database.DbPath)
 
 	if !config.Database.Persist {
 		os.Remove(config.Database.DbPath)
@@ -31,7 +32,7 @@ func NewDatabase(config *config.File) *Database {
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
 		// another initialization error.
-		log.Fatal("unable to use data source name", err)
+		log.Fatalf("unable to open database data source %s, error:%s\n", config.Database.DbPath, err)
 	}
 	if !utils.FileExists(config.Database.DbPath) {
 		sqlStmt := `
@@ -45,9 +46,12 @@ func NewDatabase(config *config.File) *Database {
 		`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
-			log.Printf("%q: %s\n", err, sqlStmt)
+			log.Printf("unable to create database table dns_blocklist, error: %s\n", err)
+			log.Fatalf("create table sql statement: %s\n", sqlStmt)
 		}
 	}
+
+	log.Printf("datbase %s succesfully opened\n", config.Database.DbPath)
 
 	dbi := Database{
 		dbPath: config.Database.DbPath,
@@ -59,6 +63,7 @@ func NewDatabase(config *config.File) *Database {
 
 //CloseDatabase function
 func (db *Database) CloseDatabase() {
+	log.Printf("closing database %s\n", db.dbPath)
 	db.db.Close()
 	log.Printf("database %s closed\n", db.dbPath)
 }
@@ -89,7 +94,8 @@ func (db *Database) UpsertRecord(record *model.DNSBlockListRecord) error {
 	currentTime := time.Now().Format(time.RFC3339)
 	_, err = stmt.Exec(record.UUID, record.IPAddress, record.ResponseCode, currentTime, currentTime, record.ResponseCode, currentTime)
 	if err != nil {
-		log.Printf("insert error: %s\n", err)
+		err = fmt.Errorf("unexpected database insert error for ip address %s, error: %s", record.IPAddress, err)
+		log.Printf("%s\n", err)
 	}
 
 	return err
@@ -117,7 +123,9 @@ func (db *Database) SelectRecord(ipAddress string) (*model.DNSBlockListRecord, e
 
 	_, err = stmt.Exec(ipAddress)
 	if err != nil {
-		log.Printf("select error: %s\n", err)
+		log.Printf("unexpected database select exec error for ip address %s, error: %s", ipAddress, err)
+		err := fmt.Errorf("unexpected query failure encountered for ip address %s", ipAddress)
+		return nil, err
 	}
 	var dblRec model.DNSBlockListRecord
 	var createdAt string
@@ -133,9 +141,13 @@ func (db *Database) SelectRecord(ipAddress string) (*model.DNSBlockListRecord, e
 
 	switch {
 	case err == sql.ErrNoRows:
-		log.Printf("no row with id %s\n", ipAddress)
+		log.Printf("no record found in database select for ip address %s, error: %s", ipAddress, err)
+		err := fmt.Errorf("blocklist for ip address %s not found", ipAddress)
+
 		return nil, err
 	case err != nil:
+		log.Printf("unexpected database select error for ip address %s, error: %s", ipAddress, err)
+		err := fmt.Errorf("unexpected query failure encountered for ip address %s", ipAddress)
 		log.Fatalf("query error: %v\n", err)
 	default:
 		dblRec.CreatedAt, _ = time.Parse(time.RFC3339, createdAt)
@@ -143,29 +155,4 @@ func (db *Database) SelectRecord(ipAddress string) (*model.DNSBlockListRecord, e
 	}
 
 	return &dblRec, nil
-}
-
-//UpdateRecord function
-func (db *Database) UpdateRecord(record *model.DNSBlockListRecord) error {
-	sqlStmt := `
-	UPDATE dns_blocklist set
-		response_code = ?,
-		updated_at = ?
-		where ip_address = ?
-	`
-
-	stmt, err := db.db.Prepare(sqlStmt)
-	if err != nil {
-		panic(err)
-	}
-
-	defer stmt.Close()
-
-	currentTime := time.Now().Format(time.RFC3339)
-	_, err = stmt.Exec(record.ResponseCode, currentTime, record.IPAddress)
-	if err != nil {
-		log.Printf("update error: %s\n", err)
-	}
-
-	return err
 }

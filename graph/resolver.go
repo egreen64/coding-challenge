@@ -4,6 +4,7 @@ import (
 	"github.com/egreen64/codingchallenge/config"
 	"github.com/egreen64/codingchallenge/db"
 	"github.com/egreen64/codingchallenge/dnsbl"
+	"github.com/egreen64/codingchallenge/jobqueue"
 )
 
 // This file will not be regenerated automatically.
@@ -15,4 +16,5 @@ type Resolver struct {
 	Config   *config.File
 	Database *db.Database
 	DNSBL    *dnsbl.Dnsbl
+	JobQueue *jobqueue.JobQueue
 }

@@ -7,11 +7,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/egreen64/codingchallenge/auth"
 	"github.com/egreen64/codingchallenge/graph/generated"
 	"github.com/egreen64/codingchallenge/graph/model"
 	"github.com/egreen64/codingchallenge/utils"
-	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -39,24 +39,20 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 		return nil, gqlerror.Errorf("not authorized")
 	}
 
+	//Validate ip addresses
+	invalidIPAddresses := false
 	for _, ipAddr := range ip {
 		if !utils.IsValidIPV4Address(ipAddr) {
-			return nil, gqlerror.Errorf("Invalid IPV4 address: %s", ip)
+			invalidIPAddresses = true
+			graphql.AddError(ctx, gqlerror.Errorf("Invalid IPV4 address: %s", ipAddr))
 		}
-		resp := r.DNSBL.Lookup(ipAddr)
+	}
+	if invalidIPAddresses {
+		return nil, gqlerror.Errorf("validation error(s)")
+	}
 
-		respCode := "NXDOMAIN"
-		if resp.Responses[0].Resp != "" {
-			respCode = resp.Responses[0].Resp
-		}
-
-		DNSBlockListRecord := model.DNSBlockListRecord{
-			UUID:         uuid.New().String(),
-			IPAddress:    ipAddr,
-			ResponseCode: respCode,
-		}
-
-		r.Database.UpsertRecord(&DNSBlockListRecord)
+	for _, ipAddr := range ip {
+		r.JobQueue.AddJob(ipAddr)
 	}
 
 	result := true
@@ -81,7 +77,10 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip *string) (*model.DN
 		return nil, gqlerror.Errorf("Invalid IPV4 address: %s", *ip)
 	}
 
-	dblRec, _ := r.Database.SelectRecord(*ip)
+	dblRec, err := r.Database.SelectRecord(*ip)
+	if err != nil {
+		return nil, gqlerror.Errorf(err.Error())
+	}
 
 	return dblRec, nil
 }

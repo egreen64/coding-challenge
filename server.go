@@ -16,6 +16,7 @@ import (
 	"github.com/egreen64/codingchallenge/dnsbl"
 	"github.com/egreen64/codingchallenge/graph"
 	"github.com/egreen64/codingchallenge/graph/generated"
+	"github.com/egreen64/codingchallenge/jobqueue"
 	"github.com/go-chi/chi"
 )
 
@@ -26,15 +27,21 @@ func main() {
 	//Read config file
 	config := config.GetConfig()
 
-	//Initialize Database
+	//Initialize databse
 	database := db.NewDatabase(config)
 
 	//Instantiate DNS Blocklist instance
 	dnsbl := dnsbl.NewDnsbl(config)
+
+	//Instantiage job queue
+	jobQueue := jobqueue.NewJobQueue(dnsbl, database)
+
+	//Initialize resolver
 	resolver := graph.Resolver{
 		Config:   config,
 		Database: database,
 		DNSBL:    dnsbl,
+		JobQueue: jobQueue,
 	}
 
 	//Obtain main context
@@ -57,6 +64,7 @@ func main() {
 	go func() {
 		<-mainCtx.Done() //container going down
 		log.Printf("container recieved TERM. Flushing.")
+		jobQueue.Stop()
 		database.CloseDatabase()
 		os.Exit(1)
 	}()
