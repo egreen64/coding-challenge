@@ -14,20 +14,21 @@ type DnsblData godnsbl.DnsblData
 
 //Dnsbl instance type
 type Dnsbl struct {
-	blackListDomains []string
+	BlocklistDomains []string
 }
 
-//NewDnsbl - Create DNS BlackList instance
+//NewDnsbl - Create DNS Blocklist instance
 func NewDnsbl(config *config.File) *Dnsbl {
 	dnsbl := Dnsbl{
-		blackListDomains: config.Dnsbl.BlacklistDomains,
+		BlocklistDomains: config.Dnsbl.BlocklistDomains,
 	}
 	return &dnsbl
 }
 
-//Lookup - Blacklist Domain Lookup
+//Lookup - Blocklist Domain Lookup
 func (d *Dnsbl) Lookup(ipAddress string) DnsblReturn {
-	godnsbl.BlacklistDomains = d.blackListDomains
+	godnsbl.BlacklistDomains = d.BlocklistDomains
 	resp := godnsbl.CheckBlacklist(ipAddress)
+
 	return DnsblReturn(resp)
 }

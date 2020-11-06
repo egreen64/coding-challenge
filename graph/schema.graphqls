@@ -1,0 +1,22 @@
+#
+# Coding Challege Schema
+#
+
+scalar Time
+
+#DNSBlockList Record structure
+type DNSBlockListRecord {
+  uuid: ID! #unique ID
+  created_at: Time! #time record was created
+  updated_at: Time! #time record was updated
+  response_code: String! #response code
+  ip_address: String! #ip address
+}
+
+type Query {
+  getIPDetails(ip: String): DNSBlockListRecord
+}
+
+type Mutation {
+  enqueue(ip: [String!]!): Boolean
+}

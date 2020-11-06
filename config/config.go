@@ -85,5 +85,5 @@ type Database struct {
 
 //Dnsbl type
 type Dnsbl struct {
-	BlacklistDomains []string `json:"blacklist_domains"`
+	BlocklistDomains []string `json:"blocklist_domains"`
 }

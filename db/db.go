@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/egreen64/codingchallenge/config"
+	"github.com/egreen64/codingchallenge/graph/model"
 	"github.com/egreen64/codingchallenge/utils"
 
 	_ "github.com/mattn/go-sqlite3" //Required for sql driver registration
@@ -14,21 +15,13 @@ import (
 
 //Database type
 type Database struct {
-	db *sql.DB
-}
-
-//DNSBlacklistRecord type
-type DNSBlacklistRecord struct {
-	ID           string
-	IPAddress    string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	ResponseCode string
+	dbPath string
+	db     *sql.DB
 }
 
 //NewDatabase instantiate database instance
 func NewDatabase(config *config.File) *Database {
-	log.Printf("Database Type: %s, Database Name: %s\n", config.Database.DbType, config.Database.DbPath)
+	log.Printf("database Type: %s, Database Name: %s\n", config.Database.DbType, config.Database.DbPath)
 
 	if !config.Database.Persist {
 		os.Remove(config.Database.DbPath)
@@ -42,7 +35,7 @@ func NewDatabase(config *config.File) *Database {
 	}
 	if !utils.FileExists(config.Database.DbPath) {
 		sqlStmt := `
-			CREATE TABLE IF NOT EXISTS dns_blacklist (
+			CREATE TABLE IF NOT EXISTS dns_blocklist (
 				ip_address TEXT PRIMARY KEY NOT NULL, 
 				id TEXT NOT NULL, 
 				response_code text,
@@ -57,22 +50,24 @@ func NewDatabase(config *config.File) *Database {
 	}
 
 	dbi := Database{
-		db: db,
+		dbPath: config.Database.DbPath,
+		db:     db,
 	}
-	//defer db.Close()
+
 	return &dbi
 }
 
 //CloseDatabase function
 func (db *Database) CloseDatabase() {
 	db.db.Close()
+	log.Printf("database %s closed\n", db.dbPath)
 }
 
 //UpsertRecord function
-func (db *Database) UpsertRecord(record *DNSBlacklistRecord) error {
+func (db *Database) UpsertRecord(record *model.DNSBlockListRecord) error {
 
 	sqlStmt := `
-		INSERT INTO dns_blacklist(
+		INSERT INTO dns_blocklist(
 			id,
 			ip_address,
 			response_code,
@@ -92,7 +87,7 @@ func (db *Database) UpsertRecord(record *DNSBlacklistRecord) error {
 	defer stmt.Close()
 
 	currentTime := time.Now().Format(time.RFC3339)
-	_, err = stmt.Exec(record.ID, record.IPAddress, record.ResponseCode, currentTime, currentTime, record.ResponseCode, currentTime)
+	_, err = stmt.Exec(record.UUID, record.IPAddress, record.ResponseCode, currentTime, currentTime, record.ResponseCode, currentTime)
 	if err != nil {
 		log.Printf("insert error: %s\n", err)
 	}
@@ -101,7 +96,7 @@ func (db *Database) UpsertRecord(record *DNSBlacklistRecord) error {
 }
 
 //SelectRecord function
-func (db *Database) SelectRecord(ipAddress string) (*DNSBlacklistRecord, error) {
+func (db *Database) SelectRecord(ipAddress string) (*model.DNSBlockListRecord, error) {
 	sqlStmt := `
 		SELECT
 			id,
@@ -109,7 +104,7 @@ func (db *Database) SelectRecord(ipAddress string) (*DNSBlacklistRecord, error) 
 			response_code,
 			created_at,
 			updated_at
-		FROM dns_blacklist 
+		FROM dns_blocklist 
 		WHERE ip_address = ?
 	`
 
@@ -124,12 +119,12 @@ func (db *Database) SelectRecord(ipAddress string) (*DNSBlacklistRecord, error) 
 	if err != nil {
 		log.Printf("select error: %s\n", err)
 	}
-	var dblRec DNSBlacklistRecord
+	var dblRec model.DNSBlockListRecord
 	var createdAt string
 	var updatedAt string
 
 	err = db.db.QueryRow(sqlStmt, ipAddress).Scan(
-		&dblRec.ID,
+		&dblRec.UUID,
 		&dblRec.IPAddress,
 		&dblRec.ResponseCode,
 		&createdAt,
@@ -151,9 +146,9 @@ func (db *Database) SelectRecord(ipAddress string) (*DNSBlacklistRecord, error) 
 }
 
 //UpdateRecord function
-func (db *Database) UpdateRecord(record *DNSBlacklistRecord) error {
+func (db *Database) UpdateRecord(record *model.DNSBlockListRecord) error {
 	sqlStmt := `
-	UPDATE dns_blacklist set
+	UPDATE dns_blocklist set
 		response_code = ?,
 		updated_at = ?
 		where ip_address = ?

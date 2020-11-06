@@ -5,7 +5,7 @@
         "persist": true
     },
     "dnsbl": {
-        "blacklist_domains": [
+        "blocklist_domains": [
             "zen.spamhaus.org"
         ]
     }
