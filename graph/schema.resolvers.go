@@ -21,6 +21,8 @@ func (r *mutationResolver) Authenticate(ctx context.Context, username string, pa
 	}
 
 	tokenString, err := auth.CreateJWT(username, password)
+	tokenString = "Bearer " + tokenString
+
 	return tokenString, err
 }
 
