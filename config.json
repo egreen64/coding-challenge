@@ -8,5 +8,9 @@
         "blocklist_domains": [
             "zen.spamhaus.org"
         ]
+    },
+    "auth" : {
+        "username": "secureworks",
+        "password": "supersecret"
     }
 }

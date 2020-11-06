@@ -18,5 +18,6 @@ type Query {
 }
 
 type Mutation {
+  authenticate(username: String!, password: String!): String!
   enqueue(ip: [String!]!): Boolean
 }

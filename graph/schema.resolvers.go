@@ -5,26 +5,45 @@ package graph
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"strings"
 
+	"github.com/egreen64/codingchallenge/auth"
 	"github.com/egreen64/codingchallenge/graph/generated"
 	"github.com/egreen64/codingchallenge/graph/model"
 	"github.com/egreen64/codingchallenge/utils"
 	"github.com/google/uuid"
 )
 
+func (r *mutationResolver) Authenticate(ctx context.Context, username string, password string) (string, error) {
+	if username != r.Config.Auth.Username || password != r.Config.Auth.Password {
+		return "", errors.New("invalid credentials")
+	}
+
+	tokenString, err := auth.CreateJWT(username, password)
+	return tokenString, err
+}
+
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, error) {
+	authToken := auth.GetContextToken(ctx)
+	if authToken == "" {
+		return nil, errors.New("not authorized")
+	}
+
+	tokenString := strings.TrimPrefix(authToken, "Bearer ")
+	valid, err := auth.ValidateJWT(tokenString, r.Config.Auth.Username, r.Config.Auth.Password)
+
+	if !valid || err != nil {
+		return nil, errors.New("not authorized")
+	}
+
 	for _, ipAddr := range ip {
 		if !utils.IsValidIPV4Address(ipAddr) {
 			errorString := fmt.Sprintf("Invalid IPV4 address: %s", ip)
 			return nil, errors.New(errorString)
 		}
 		resp := r.DNSBL.Lookup(ipAddr)
-		jsonResponse, _ := json.Marshal(resp)
-		log.Printf("%s\n", jsonResponse)
 
 		respCode := "NXDOMAIN"
 		if resp.Responses[0].Resp != "" {
@@ -46,13 +65,24 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 }
 
 func (r *queryResolver) GetIPDetails(ctx context.Context, ip *string) (*model.DNSBlockListRecord, error) {
+	authToken := auth.GetContextToken(ctx)
+	if authToken == "" {
+		return nil, errors.New("not authorized")
+	}
+
+	tokenString := strings.TrimPrefix(authToken, "Bearer ")
+	valid, err := auth.ValidateJWT(tokenString, r.Config.Auth.Username, r.Config.Auth.Password)
+
+	if !valid || err != nil {
+		return nil, errors.New("not authorized")
+	}
+
 	if !utils.IsValidIPV4Address(*ip) {
 		errorString := fmt.Sprintf("Invalid IPV4 address: %s", *ip)
 		return nil, errors.New(errorString)
 	}
 
 	dblRec, _ := r.Database.SelectRecord(*ip)
-	log.Println(dblRec)
 
 	return dblRec, nil
 }

@@ -74,6 +74,7 @@ func findConfig() string {
 type File struct {
 	Database Database `json:"db"`
 	Dnsbl    Dnsbl    `json:"dnsbl"`
+	Auth     Auth     `json:"auth"`
 }
 
 //Database type
@@ -86,4 +87,10 @@ type Database struct {
 //Dnsbl type
 type Dnsbl struct {
 	BlocklistDomains []string `json:"blocklist_domains"`
+}
+
+//Auth type
+type Auth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
