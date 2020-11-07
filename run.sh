@@ -6,4 +6,4 @@ else
     port=$1
 fi
 
-echo docker run -d -p $port:8080 --name coding_challenge coding_challenge:latest
+docker run -d -p $port:8080 --name coding_challenge coding_challenge:latest
