@@ -79,8 +79,10 @@ func main() {
 		os.Exit(1)
 	}()
 
+	//Instantiate router
 	router := chi.NewRouter()
 
+	//Use authentication middleware
 	router.Use(auth.Middleware(config))
 
 	//Instantiate graphql server
@@ -98,7 +100,6 @@ func main() {
 
 	//Start server on listening port
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-
 	err = http.ListenAndServe(":"+port, router)
 	if err != nil {
 		panic(err)
