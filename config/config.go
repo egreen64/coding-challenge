@@ -72,9 +72,15 @@ func findConfig() string {
 
 //File struct
 type File struct {
+	Logger   Logger   `json:"logger"`
 	Database Database `json:"db"`
 	Dnsbl    Dnsbl    `json:"dnsbl"`
 	Auth     Auth     `json:"auth"`
+}
+
+//Logger type
+type Logger struct {
+	LogFileName string `json:"log_file_name"`
 }
 
 //Database type

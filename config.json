@@ -1,4 +1,7 @@
 { 
+    "logger": {
+        "log_file_name": "./coding_challenge.log"
+    },
     "db": {
         "db_type": "sqlite3",
         "db_path": "./coding_challenge.db",

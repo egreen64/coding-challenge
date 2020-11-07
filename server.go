@@ -24,6 +24,15 @@ const defaultPort = "8080"
 
 func main() {
 
+	//Initialize logging
+	logFile, err := os.OpenFile("coding_challenge.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
+
 	//Read config file
 	config := config.GetConfig()
 
@@ -89,7 +98,7 @@ func main() {
 	//Start server on listening port
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
-	err := http.ListenAndServe(":"+port, router)
+	err = http.ListenAndServe(":"+port, router)
 	if err != nil {
 		panic(err)
 	}

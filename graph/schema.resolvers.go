@@ -44,15 +44,22 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 	for _, ipAddr := range ip {
 		if !utils.IsValidIPV4Address(ipAddr) {
 			invalidIPAddresses = true
-			graphql.AddError(ctx, gqlerror.Errorf("Invalid IPV4 address: %s", ipAddr))
+			graphql.AddError(ctx, gqlerror.Errorf("invalid IPV4 address: %s", ipAddr))
 		}
 	}
 	if invalidIPAddresses {
 		return nil, gqlerror.Errorf("validation error(s)")
 	}
 
+	jobsNotAdded := false
 	for _, ipAddr := range ip {
-		r.JobQueue.AddJob(ipAddr)
+		if !r.JobQueue.AddJob(ipAddr) {
+			jobsNotAdded = true
+			graphql.AddError(ctx, gqlerror.Errorf("unable to queue job for ip address: %s. queue is curently full. please try again", ipAddr))
+		}
+	}
+	if jobsNotAdded {
+		return nil, gqlerror.Errorf("scheduling error(s)")
 	}
 
 	result := true
