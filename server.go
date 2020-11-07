@@ -24,17 +24,17 @@ const defaultPort = "8080"
 
 func main() {
 
+	//Read config file
+	config := config.GetConfig()
+
 	//Initialize logging
-	logFile, err := os.OpenFile("coding_challenge.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(config.Logger.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer logFile.Close()
 
 	log.SetOutput(logFile)
-
-	//Read config file
-	config := config.GetConfig()
 
 	//Initialize databse
 	database := db.NewDatabase(config)
@@ -64,17 +64,18 @@ func main() {
 	go func() {
 		for {
 			s := <-sigChan
-			log.Printf("codingchallege signal recieved '%s'", s)
+			log.Printf("%s recieved signal '%s'", os.Args[0], s)
 			shutdown()
 		}
 	}()
 
-	//Handle gracefule shutdown
+	//Handle graceful shutdown
 	go func() {
 		<-mainCtx.Done() //container going down
-		log.Printf("container recieved TERM. Flushing.")
+		log.Printf("%s recieved termination signal. shutting down...", os.Args[0])
 		jobQueue.Stop()
 		database.CloseDatabase()
+		log.Printf("%s shutdown complete", os.Args[0])
 		os.Exit(1)
 	}()
 
