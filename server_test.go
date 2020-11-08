@@ -82,6 +82,21 @@ func TestCodingChallenge(t *testing.T) {
 
 	require.Equal(t, "Bearer", strings.Split(authResp.Authenticate.BearerToken, " ")[0])
 
+	var resp struct {
+		Enqueue bool
+	}
+
+	mutation = `
+		mutation { 
+			enqueue(ip: ["127.0.0.2", "127.0.0.3", "127.0.0.4", "127.0.0.9", "127.0.0.10", , "127.0.0.11", , "127.0.0.12"]) 
+		}
+	`
+	c.Post(mutation, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+	require.Equal(t, true, resp.Enqueue)
+
+	//Wait for blocklist jobs to complete
+	time.Sleep(1 * time.Second)
+
 	t.Run("obtain_authentication_token_success", func(t *testing.T) {
 		var resp struct {
 			Authenticate struct {
@@ -185,15 +200,74 @@ func TestCodingChallenge(t *testing.T) {
 		require.Equal(t, false, resp.Enqueue)
 	})
 
-	t.Run("get_ip_details_success", func(t *testing.T) {
+	t.Run("get_ip_details_success_127.0.0.2", func(t *testing.T) {
 
 		var resp struct {
-			GetIPDetails struct {
-				UUID         string    `json:"uuid"`
-				CreatedAt    time.Time `json:"created_at"`
-				UpdatedAt    time.Time `json:"updated_at"`
-				ResponseCode string    `json:"response_code"`
-				IPAddress    string    `json:"ip_address"`
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.2") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		log.Printf("%s\n", err)
+		require.Equal(t, "127.0.0.2", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "127.0.0.2", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_127.0.0.3", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.3") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.3", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "127.0.0.3", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_127.0.0.4", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
 			}
 		}
 
@@ -209,8 +283,211 @@ func TestCodingChallenge(t *testing.T) {
 				}
 			}
 		`
-		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
-		log.Printf("%s\n", err)
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.4", resp.GetIPDetails.IPAddress)
 		require.Equal(t, "127.0.0.4", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_127.0.0.9", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.9") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.9", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "127.0.0.2", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_127.0.0.10", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.10") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.10", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "127.0.0.10", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_127.0.0.11", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.11") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.11", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "127.0.0.11", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_success_NXDOMAIN", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.12") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.12", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "NXDOMAIN", resp.GetIPDetails.ResponseCode)
+	})
+
+	t.Run("get_ip_details_failure_no_auth_token", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.4") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		err := c.Post(query, &resp)
+		require.EqualError(t, err, `[{"message":"missing auth token","path":["getIPDetails"]}]`)
+		require.Nil(t, resp.GetIPDetails)
+	})
+
+	t.Run("get_ip_details_failure_blocklist_not_found", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.92") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.EqualError(t, err, `[{"message":"blocklist for ip address 127.0.0.92 not found","path":["getIPDetails"]}]`)
+		require.Nil(t, resp.GetIPDetails)
+	})
+
+	t.Run("get_ip_details_failure_invalid_ip_address", func(t *testing.T) {
+
+		var resp struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.444") 
+				{
+			  		uuid
+			  		ip_address
+			  		created_at
+			  		updated_at
+			  		response_code
+				}
+			}
+		`
+		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.EqualError(t, err, `[{"message":"invalid IPV4 address: 127.0.0.444","path":["getIPDetails"]}]`)
+		require.Nil(t, resp.GetIPDetails)
 	})
 }

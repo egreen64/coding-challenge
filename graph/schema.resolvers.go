@@ -81,7 +81,7 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip *string) (*model.DN
 	}
 
 	if !utils.IsValidIPV4Address(*ip) {
-		return nil, gqlerror.Errorf("Invalid IPV4 address: %s", *ip)
+		return nil, gqlerror.Errorf("invalid IPV4 address: %s", *ip)
 	}
 
 	dblRec, err := r.Database.SelectRecord(*ip)
