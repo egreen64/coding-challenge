@@ -99,7 +99,7 @@ func TestCodingChallenge(t *testing.T) {
 	require.Equal(t, true, resp.Enqueue)
 
 	//Wait for blocklist jobs to complete
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("authenticate_success", func(t *testing.T) {
 		var resp struct {
