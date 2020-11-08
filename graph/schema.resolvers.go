@@ -15,15 +15,15 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) Authenticate(ctx context.Context, username string, password string) (string, error) {
+func (r *mutationResolver) Authenticate(ctx context.Context, username string, password string) (*model.AuthToken, error) {
 	if username != r.Config.Auth.Username || password != r.Config.Auth.Password {
-		return "", gqlerror.Errorf("invalid credentials")
+		return nil, gqlerror.Errorf("invalid credentials")
 	}
 
-	tokenString, err := auth.CreateJWT(username, password)
-	tokenString = "Bearer " + tokenString
+	jwt, err := auth.CreateJWT(username, password)
+	authToken := "Bearer " + jwt
 
-	return tokenString, err
+	return &model.AuthToken{BearerToken: authToken}, err
 }
 
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, error) {
@@ -32,8 +32,8 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 		return nil, gqlerror.Errorf("missing auth token")
 	}
 
-	tokenString := strings.TrimPrefix(authToken, "Bearer ")
-	valid, err := auth.ValidateJWT(tokenString, r.Config.Auth.Username, r.Config.Auth.Password)
+	jwt := strings.TrimPrefix(authToken, "Bearer ")
+	valid, err := auth.ValidateJWT(jwt, r.Config.Auth.Username, r.Config.Auth.Password)
 
 	if !valid || err != nil {
 		return nil, gqlerror.Errorf("not authorized")

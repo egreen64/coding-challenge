@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+type AuthToken struct {
+	BearerToken string `json:"bearerToken"`
+}
+
 type DNSBlockListRecord struct {
 	UUID         string    `json:"uuid"`
 	CreatedAt    time.Time `json:"created_at"`

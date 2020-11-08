@@ -4,6 +4,11 @@
 
 scalar Time
 
+#AutToken structure
+type AuthToken {
+  bearer_token: String! #bearer token
+}
+
 #DNSBlockList Record structure
 type DNSBlockListRecord {
   uuid: ID! #unique ID
@@ -18,6 +23,6 @@ type Query {
 }
 
 type Mutation {
-  authenticate(username: String!, password: String!): String!
+  authenticate(username: String!, password: String!): AuthToken!
   enqueue(ip: [String!]!): Boolean
 }

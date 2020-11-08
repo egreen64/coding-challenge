@@ -43,6 +43,10 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AuthToken struct {
+		BearerToken func(childComplexity int) int
+	}
+
 	DNSBlockListRecord struct {
 		CreatedAt    func(childComplexity int) int
 		IPAddress    func(childComplexity int) int
@@ -62,7 +66,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	Authenticate(ctx context.Context, username string, password string) (string, error)
+	Authenticate(ctx context.Context, username string, password string) (*model.AuthToken, error)
 	Enqueue(ctx context.Context, ip []string) (*bool, error)
 }
 type QueryResolver interface {
@@ -83,6 +87,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AuthToken.bearerToken":
+		if e.complexity.AuthToken.BearerToken == nil {
+			break
+		}
+
+		return e.complexity.AuthToken.BearerToken(childComplexity), true
 
 	case "DNSBlockListRecord.created_at":
 		if e.complexity.DNSBlockListRecord.CreatedAt == nil {
@@ -225,6 +236,11 @@ var sources = []*ast.Source{
 
 scalar Time
 
+#AutToken structure
+type AuthToken {
+  bearerToken: String! #bearer token
+}
+
 #DNSBlockList Record structure
 type DNSBlockListRecord {
   uuid: ID! #unique ID
@@ -239,7 +255,7 @@ type Query {
 }
 
 type Mutation {
-  authenticate(username: String!, password: String!): String!
+  authenticate(username: String!, password: String!): AuthToken!
   enqueue(ip: [String!]!): Boolean
 }
 `, BuiltIn: false},
@@ -356,6 +372,41 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AuthToken_bearerToken(ctx context.Context, field graphql.CollectedField, obj *model.AuthToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AuthToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BearerToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _DNSBlockListRecord_uuid(ctx context.Context, field graphql.CollectedField, obj *model.DNSBlockListRecord) (ret graphql.Marshaler) {
 	defer func() {
@@ -569,9 +620,9 @@ func (ec *executionContext) _Mutation_authenticate(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.AuthToken)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNAuthToken2ᚖgithubᚗcomᚋegreen64ᚋcodingchallengeᚋgraphᚋmodelᚐAuthToken(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_enqueue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1818,6 +1869,33 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** object.gotpl ****************************
 
+var authTokenImplementors = []string{"AuthToken"}
+
+func (ec *executionContext) _AuthToken(ctx context.Context, sel ast.SelectionSet, obj *model.AuthToken) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authTokenImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AuthToken")
+		case "bearerToken":
+			out.Values[i] = ec._AuthToken_bearerToken(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var dNSBlockListRecordImplementors = []string{"DNSBlockListRecord"}
 
 func (ec *executionContext) _DNSBlockListRecord(ctx context.Context, sel ast.SelectionSet, obj *model.DNSBlockListRecord) graphql.Marshaler {
@@ -2183,6 +2261,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAuthToken2githubᚗcomᚋegreen64ᚋcodingchallengeᚋgraphᚋmodelᚐAuthToken(ctx context.Context, sel ast.SelectionSet, v model.AuthToken) graphql.Marshaler {
+	return ec._AuthToken(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuthToken2ᚖgithubᚗcomᚋegreen64ᚋcodingchallengeᚋgraphᚋmodelᚐAuthToken(ctx context.Context, sel ast.SelectionSet, v *model.AuthToken) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AuthToken(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
