@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -22,6 +23,9 @@ import (
 )
 
 func TestCodingChallenge(t *testing.T) {
+	//Disable logging
+	log.SetOutput(ioutil.Discard)
+
 	//Read config file
 	config := config.GetConfig()
 
@@ -97,7 +101,7 @@ func TestCodingChallenge(t *testing.T) {
 	//Wait for blocklist jobs to complete
 	time.Sleep(1 * time.Second)
 
-	t.Run("obtain_authentication_token_success", func(t *testing.T) {
+	t.Run("authenticate_success", func(t *testing.T) {
 		var resp struct {
 			Authenticate struct {
 				BearerToken string `json:"bearerToken"`
@@ -118,7 +122,7 @@ func TestCodingChallenge(t *testing.T) {
 		require.Equal(t, "Bearer", strings.Split(resp.Authenticate.BearerToken, " ")[0])
 	})
 
-	t.Run("obtain_authentication_token_invalid_credentials", func(t *testing.T) {
+	t.Run("authenticate_failure_invalid_credentials", func(t *testing.T) {
 		var resp struct {
 			Authenticate struct {
 				BearerToken string `json:"bearerToken"`

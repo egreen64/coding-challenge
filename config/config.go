@@ -61,7 +61,7 @@ func findConfig() string {
 	}
 
 	configPath := filepath.Join(cwd, "config.json")
-	log.Printf("configPath: %s\n", configPath)
+
 	if !utils.FileExists(configPath) {
 		err := errors.New("config.json file not found")
 		panic(err)
