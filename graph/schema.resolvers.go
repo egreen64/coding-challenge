@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/egreen64/codingchallenge/auth"
@@ -86,7 +87,13 @@ func (r *queryResolver) GetIPDetails(ctx context.Context, ip *string) (*model.DN
 
 	dblRec, err := r.Database.SelectRecord(*ip)
 	if err != nil {
-		return nil, gqlerror.Errorf(err.Error())
+		dblRec = &model.DNSBlockListRecord{
+			IPAddress:    *ip,
+			ResponseCode: "NXDOMAIN",
+			UUID:         "",
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		}
 	}
 
 	return dblRec, nil

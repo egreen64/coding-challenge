@@ -16,6 +16,10 @@ type contextKey struct {
 	name string
 }
 
+const (
+	expirationTimePeriod = 15
+)
+
 var (
 	signingKey      = []byte("secret")
 	authTokenCtxKey = &contextKey{"auth-token"}
@@ -34,7 +38,7 @@ func CreateJWT(username string, password string) (string, error) {
 		username,
 		password,
 		jwt.StandardClaims{
-			ExpiresAt: time.Date(2021, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+			ExpiresAt: time.Now().Add(expirationTimePeriod * time.Second).Unix(),
 		},
 	}
 

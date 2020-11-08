@@ -527,9 +527,12 @@ func TestCodingChallenge(t *testing.T) {
 				}
 			}
 		`
-		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
-		require.EqualError(t, err, `[{"message":"blocklist for ip address 127.0.0.92 not found","path":["getIPDetails"]}]`)
-		require.Nil(t, resp.GetIPDetails)
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.92", resp.GetIPDetails.IPAddress)
+		require.Equal(t, "NXDOMAIN", resp.GetIPDetails.ResponseCode)
+		require.Equal(t, "", resp.GetIPDetails.UUID)
+		require.NotEmpty(t, resp.GetIPDetails.CreatedAt)
+		require.NotEmpty(t, resp.GetIPDetails.UpdatedAt)
 	})
 
 	t.Run("get_ip_details_failure_invalid_ip_address", func(t *testing.T) {
