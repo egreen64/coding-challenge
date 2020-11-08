@@ -99,7 +99,7 @@ func TestCodingChallenge(t *testing.T) {
 	require.Equal(t, true, resp.Enqueue)
 
 	//Wait for blocklist jobs to complete
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	t.Run("authenticate_success", func(t *testing.T) {
 		var resp struct {
@@ -149,7 +149,7 @@ func TestCodingChallenge(t *testing.T) {
 
 		mutation := `
 			mutation {
-				enqueue(ip: ["127.0.0.3", "127.0.0.4", "127.0.0.5", "127.0.0.153", "127.0.0.163"]) 
+				enqueue(ip: ["127.0.0.13", "127.0.0.14", "127.0.0.15", "127.0.0.153", "127.0.0.163"]) 
 			}
 		`
 		c.Post(mutation, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
