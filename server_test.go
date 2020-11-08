@@ -77,7 +77,7 @@ func TestCodingChallenge(t *testing.T) {
 	}
 
 	mutation := `
-		mutation { 
+		mutation {
 			authenticate(username: "secureworks", password: "supersecret") 
 			{ bearerToken } 
 		}
@@ -91,7 +91,7 @@ func TestCodingChallenge(t *testing.T) {
 	}
 
 	mutation = `
-		mutation { 
+		mutation {
 			enqueue(ip: ["127.0.0.2", "127.0.0.3", "127.0.0.4", "127.0.0.9", "127.0.0.10", , "127.0.0.11", , "127.0.0.12"]) 
 		}
 	`
@@ -109,7 +109,7 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				authenticate(username: "secureworks", password: "supersecret") 
 				{ 
 					bearerToken 
@@ -130,7 +130,7 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				authenticate(username: "bozo", password: "clown") 
 				{ 
 					bearerToken 
@@ -148,12 +148,79 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				enqueue(ip: ["127.0.0.3", "127.0.0.4", "127.0.0.5", "127.0.0.153", "127.0.0.163"]) 
 			}
 		`
 		c.Post(mutation, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
 		require.Equal(t, true, resp.Enqueue)
+	})
+
+	t.Run("enqueue_success_update", func(t *testing.T) {
+
+		var enqueueResp struct {
+			Enqueue bool
+		}
+
+		mutation := `
+			mutation {
+				enqueue(ip: ["127.0.0.122"])
+			}
+		`
+		c.Post(mutation, &enqueueResp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, true, enqueueResp.Enqueue)
+
+		time.Sleep(1 * time.Second)
+
+		var getResp1 struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		query := `
+			{
+				getIPDetails(ip:"127.0.0.122")
+				{
+					uuid
+					ip_address
+					created_at
+					updated_at
+					response_code
+				}
+			}
+		`
+		c.Post(query, &getResp1, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.122", getResp1.GetIPDetails.IPAddress)
+		require.Equal(t, "NXDOMAIN", getResp1.GetIPDetails.ResponseCode)
+
+		c.Post(mutation, &enqueueResp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, true, enqueueResp.Enqueue)
+
+		time.Sleep(1 * time.Second)
+
+		var getResp2 struct {
+			GetIPDetails *struct {
+				UUID         string `json:"uuid"`
+				CreatedAt    string `json:"created_at"`
+				UpdatedAt    string `json:"updated_at"`
+				ResponseCode string `json:"response_code"`
+				IPAddress    string `json:"ip_address"`
+			}
+		}
+
+		c.Post(query, &getResp2, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
+		require.Equal(t, "127.0.0.122", getResp2.GetIPDetails.IPAddress)
+		require.Equal(t, "NXDOMAIN", getResp2.GetIPDetails.ResponseCode)
+
+		require.Equal(t, getResp1.GetIPDetails.IPAddress, getResp2.GetIPDetails.IPAddress)
+		require.Equal(t, getResp1.GetIPDetails.ResponseCode, getResp2.GetIPDetails.ResponseCode)
+		require.Equal(t, getResp1.GetIPDetails.CreatedAt, getResp2.GetIPDetails.CreatedAt)
+		require.NotEqual(t, getResp1.GetIPDetails.UpdatedAt, getResp2.GetIPDetails.UpdatedAt)
 	})
 
 	t.Run("enqueue_failure_no_auth_token", func(t *testing.T) {
@@ -162,7 +229,7 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				enqueue(ip: ["127.0.0.3", "127.0.0.4", "127.0.0.5", "127.0.0.153", "127.0.0.163"]) 
 			}
 		`
@@ -178,7 +245,7 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				enqueue(ip: ["127.0.0.256"]) 
 			}
 		`
@@ -194,7 +261,7 @@ func TestCodingChallenge(t *testing.T) {
 		}
 
 		mutation := `
-			mutation { 
+			mutation {
 				enqueue(ip: ["127.0.0.256", "127.0.0.257"]) 
 			}
 		`
@@ -228,8 +295,7 @@ func TestCodingChallenge(t *testing.T) {
 				}
 			}
 		`
-		err := c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
-		log.Printf("%s\n", err)
+		c.Post(query, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
 		require.Equal(t, "127.0.0.2", resp.GetIPDetails.IPAddress)
 		require.Equal(t, "127.0.0.2", resp.GetIPDetails.ResponseCode)
 	})
