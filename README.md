@@ -26,10 +26,10 @@ Besides the authenticat mutation the GraphQL interface provides 2 primary enty p
 
 ### Packages
 The implementation of this microservice depends on the following 3rd party Golang packages to provide its capabilities:
-- **github.com/99designs/gqlgen**  - Framework to generate Golang code in order build to implement graphql servers
--	**github.com/mattn/go-sqlite3**  - sqlite3 database driver
-- **github.com/nerdbaggy/godnsbl** - DNS Blocklist lookup functionality
-- **github.com/dgrijalva/jwt-go**  - Library for creating and validating JWTs used by this application to provide authentication
-- **github.com/go-chi/chi**        - HTTP router which provides support for HTTP middleware, specifically authentication middleware
--	**github.com/google/uuid**       - Library for generating [RFC 4122](http://tools.ietf.org/html/rfc4122) UUIDs 
--	**github.com/stretchr/testify**  - Tools for testifying that your code will behave as you intend
+- **[gqlgen](https://github.com/99designs/gqlgen)**  - Framework to generate Golang code in order build to implement graphql servers
+-	**[sqlite3](https://github.com/mattn/go-sqlite3)**  - sqlite3 database driver
+- **[godnsbl](https://github.com/nerdbaggy/godnsbl)** - DNS Blocklist lookup functionality
+- **[jwt-go](https://github.com/dgrijalva/jwt-go)**  - Library for creating and validating JWTs used by this application to provide authentication
+- **[chi](https://github.com/go-chi/chi)**        - HTTP router which provides support for HTTP middleware, specifically authentication middleware
+-	**[uuid](https://github.com/google/uuid)**       - Library for generating [RFC 4122](http://tools.ietf.org/html/rfc4122) UUIDs 
+-	**[testify](https://github.com/stretchr/testify)**  - Tools for testifying that your code will behave as you intend
