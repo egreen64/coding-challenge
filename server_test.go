@@ -198,6 +198,8 @@ func TestCodingChallenge(t *testing.T) {
 		require.Equal(t, "127.0.0.122", getResp1.GetIPDetails.IPAddress)
 		require.Equal(t, "NXDOMAIN", getResp1.GetIPDetails.ResponseCode)
 
+		time.Sleep(1 * time.Second)
+
 		c.Post(mutation, &enqueueResp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken))
 		require.Equal(t, true, enqueueResp.Enqueue)
 
