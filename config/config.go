@@ -14,10 +14,6 @@ import (
 var config File
 var readConfig = false
 
-func init() {
-	ReadConfig()
-}
-
 //ReadConfig function
 func ReadConfig() *File {
 
@@ -45,6 +41,10 @@ func ReadConfig() *File {
 
 //GetConfig function
 func GetConfig() *File {
+	if !readConfig {
+		ReadConfig()
+		readConfig = true
+	}
 	return &config
 }
 

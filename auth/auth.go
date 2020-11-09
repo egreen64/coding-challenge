@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/egreen64/codingchallenge/config"
 )
 
 // A private key for context that only this package can access. This is important
@@ -54,7 +53,7 @@ func ValidateJWT(tokenString string, username string, password string) (bool, er
 	})
 
 	if err != nil {
-		return false, err
+		return false, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*customClaims)
@@ -69,7 +68,7 @@ func ValidateJWT(tokenString string, username string, password string) (bool, er
 }
 
 //Middleware decodes the share session cookie and packs the session into context
-func Middleware(config *config.File) func(http.Handler) http.Handler {
+func Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			bearerToken := r.Header.Get("Authorization")

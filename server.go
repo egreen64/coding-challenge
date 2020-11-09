@@ -82,7 +82,7 @@ func main() {
 	router := chi.NewRouter()
 
 	//Use authentication middleware
-	router.Use(auth.Middleware(config))
+	router.Use(auth.Middleware())
 
 	//Instantiate graphql server
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver}))

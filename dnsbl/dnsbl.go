@@ -6,11 +6,11 @@ import (
 	"github.com/nerdbaggy/godnsbl"
 )
 
-//DnsblReturn type
-type DnsblReturn godnsbl.DnsblReturn
+//Return type
+type Return godnsbl.DnsblReturn
 
-//DnsblData type
-type DnsblData godnsbl.DnsblData
+//Data type
+type Data godnsbl.DnsblData
 
 //Dnsbl instance type
 type Dnsbl struct {
@@ -26,9 +26,9 @@ func NewDnsbl(config *config.File) *Dnsbl {
 }
 
 //Lookup - Blocklist Domain Lookup
-func (d *Dnsbl) Lookup(ipAddress string) DnsblReturn {
+func (d *Dnsbl) Lookup(ipAddress string) Return {
 	godnsbl.BlacklistDomains = d.BlocklistDomains
 	resp := godnsbl.CheckBlacklist(ipAddress)
 
-	return DnsblReturn(resp)
+	return Return(resp)
 }
