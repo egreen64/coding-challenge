@@ -77,6 +77,7 @@ type File struct {
 	Database Database `json:"db"`
 	Dnsbl    Dnsbl    `json:"dnsbl"`
 	Auth     Auth     `json:"auth"`
+	JobQueue JobQueue `json:"job_queue"`
 }
 
 //Server type
@@ -106,4 +107,9 @@ type Auth struct {
 	Username           string `json:"username"`
 	Password           string `json:"password"`
 	ExpirationDuration int    `json:"expiration_duration"`
+}
+
+//JobQueue type
+type JobQueue struct {
+	QueueLength int `json:"queue_length"`
 }

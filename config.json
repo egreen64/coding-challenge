@@ -19,5 +19,8 @@
         "username": "secureworks",
         "password": "supersecret",
         "expiration_duration": 15
+    },
+    "job_queue": {
+        "queue_length": 100
     }
 }

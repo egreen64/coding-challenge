@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/egreen64/codingchallenge/config"
 	"github.com/egreen64/codingchallenge/db"
 	"github.com/egreen64/codingchallenge/dnsbl"
 	"github.com/egreen64/codingchallenge/graph/model"
@@ -21,11 +22,11 @@ type JobQueue struct {
 }
 
 //NewJobQueue function
-func NewJobQueue(dnsbl *dnsbl.Dnsbl, db *db.Database) *JobQueue {
+func NewJobQueue(config *config.File, dnsbl *dnsbl.Dnsbl, db *db.Database) *JobQueue {
 	jobQueue := JobQueue{
 		dnsbl:       dnsbl,
 		db:          db,
-		jobChannel:  make(chan []string, 100),
+		jobChannel:  make(chan []string, config.JobQueue.QueueLength),
 		stopChannel: make(chan struct{}),
 		wg:          sync.WaitGroup{},
 	}

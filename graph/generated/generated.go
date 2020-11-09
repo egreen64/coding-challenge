@@ -285,7 +285,8 @@ Coding Challenge Queries
 """
 type Query {
   """
-  Provides DNS blocklist information for the specified IPV4 address
+  Provides DNS blocklist information for the specified IPV4 address. If the ip address has not been previously specified
+  in a preivious enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
   """
   getIPDetails(ip: String): DNSBlockListRecord
 }
@@ -301,7 +302,8 @@ type Mutation {
 
   """
   Used to queue an array of IPV4 addresses onto the aysnchronous job queue so that blocklist information can be obtained
-  for those IP Addresses
+  for those IP Addresses. If the queue is full, then an error will be returned indicating the queue is currently full, and that a retry
+  should be attempted.
   """
   enqueue(ip: [String!]!): Boolean
 }

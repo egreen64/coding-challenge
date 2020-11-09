@@ -42,7 +42,7 @@ func main() {
 	dnsbl := dnsbl.NewDnsbl(config)
 
 	//Instantiage job queue
-	jobQueue := jobqueue.NewJobQueue(dnsbl, database)
+	jobQueue := jobqueue.NewJobQueue(config, dnsbl, database)
 
 	//Initialize resolver
 	resolver := graph.Resolver{
