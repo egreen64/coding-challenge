@@ -72,14 +72,14 @@ func TestCodingChallenge(t *testing.T) {
 
 	var authResp struct {
 		Authenticate struct {
-			BearerToken string `json:"bearerToken"`
+			BearerToken string `json:"bearer_token"`
 		}
 	}
 
 	mutation := `
 		mutation {
 			authenticate(username: "secureworks", password: "supersecret") 
-			{ bearerToken } 
+			{ bearer_token } 
 		}
 	`
 	c.MustPost(mutation, &authResp)
@@ -104,7 +104,7 @@ func TestCodingChallenge(t *testing.T) {
 	t.Run("authenticate_success", func(t *testing.T) {
 		var resp struct {
 			Authenticate struct {
-				BearerToken string `json:"bearerToken"`
+				BearerToken string `json:"bearer_token"`
 			}
 		}
 
@@ -112,7 +112,7 @@ func TestCodingChallenge(t *testing.T) {
 			mutation {
 				authenticate(username: "secureworks", password: "supersecret") 
 				{ 
-					bearerToken 
+					bearer_token 
 				} 
 			}
 		`
@@ -125,7 +125,7 @@ func TestCodingChallenge(t *testing.T) {
 	t.Run("authenticate_failure_invalid_credentials", func(t *testing.T) {
 		var resp struct {
 			Authenticate struct {
-				BearerToken string `json:"bearerToken"`
+				BearerToken string `json:"bearer_token"`
 			}
 		}
 
@@ -133,7 +133,7 @@ func TestCodingChallenge(t *testing.T) {
 			mutation {
 				authenticate(username: "bozo", password: "clown") 
 				{ 
-					bearerToken 
+					bearer_token 
 				} 
 			}
 		`
