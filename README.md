@@ -1,15 +1,15 @@
 # coding-challenge
 
 ## Purpose
-This project implements a GraphQL based microservice written entirely in Go. The purpose of this microservice is to perform DNS lookups of IPV4 IP addreses to determine if the IP addresses are on a block list. This service is useful for gathering threat intelligence and can be used, for example, by mail servers to block emails from being processed if the email sender's IP address is on a block list.
+This project implements a **GraphQL** based microservice written entirely in Go. The purpose of this microservice is to perform DNS lookups of IPV4 IP addreses to determine if the IP addresses are on a block list. This service is useful for gathering threat intelligence and can be used, for example, by mail servers to block emails from being processed if the email sender's IP address is on a block list.
 
 ## Implementation
-This microservice is implemented in Golang and uses the gqlgen package as a framework for implementing the GraphQL interface. Sqlite3 is used as the backend database for storing the requested DNS blocklist details for each of the IP addreses provided via the GraphQL interface. Currently blocklist information is only collected for IPV4 addresses. 
+This microservice is implemented in Golang and uses the **[gqlgen](https://github.com/99designs/gqlgen)**  package as a framework for implementing the GraphQL interface. The microservice also uses a backend database for storing the requested DNS blocklist details for each of the IP addreses provided via the GraphQL interface. Currently blocklist information is only collected for IPV4 addresses. 
 
 ### Packages
 The implementation of this microservice depends on the following 3rd party Golang packages to provide its capabilities:
 - **[gqlgen](https://github.com/99designs/gqlgen)**  - Framework to generate Golang code in order build to implement graphql servers
--	**[sqlite3](https://github.com/mattn/go-sqlite3)**  - sqlite3 database driver
+- **[sqlite3](https://github.com/mattn/go-sqlite3)**  - sqlite3 database driver
 - **[godnsbl](https://github.com/nerdbaggy/godnsbl)** - DNS Blocklist lookup functionality
 - **[jwt-go](https://github.com/dgrijalva/jwt-go)**  - Library for creating and validating JWTs used by this application to provide authentication
 - **[chi](https://github.com/go-chi/chi)**        - HTTP router which provides support for HTTP middleware, specifically authentication middleware
