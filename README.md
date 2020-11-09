@@ -41,6 +41,9 @@ A configuration file in JSON syntax is used to specify various configuration fil
         "username": "secureworks",
         "password": "supersecret",
         "expiration_duration": 15
+    },
+    "job_queue": {
+        "queue_length": 100
     }
 }
 ```
@@ -51,7 +54,7 @@ The microservice generates log messages to a log file using the standard golang 
 This log file can be used for debugging and informational purposes.
 
 ### DNSBL
-IP Addresses can be checked against one or more blocklist domains. As per the requirements of this coding challenge, the blocklist domain being used is **zen.spamhaus.og** as configured in the **blocklist_domain** attribute of the **dnsbl** secition of the **config.json** file.
+IP Addresses can be checked against one or more blocklist domains. As per the requirements of this coding challenge, the blocklist domain being used is **[zen.spamhaus.org](https://www.spamhaus.org/faq/section/DNSBL%20Usage)** as configured in the **blocklist_domain** attribute of the **dnsbl** section of the **config.json** file.
 
 ### Database
 The database used for storing the blocklist details is an sqlite3 database in a database file named **coding_challenge.db**. The file name of the database can be changed by specifying a new dabase file name in the **db_path** attribute of the **db** section of the **config.json** file. 
@@ -59,7 +62,7 @@ The database used for storing the blocklist details is an sqlite3 database in a 
 Additionally, by default, the datbase is persisted across various instantiations of the microservice. If the database is to not be persisted, the default behavior can be changed by setting the **persist** attribute to **false** in the **db** section of the **config.json** file.
 
 ### Job Queue
-This microservice also implements a job queue using a Golang channel serviced by an asyncronous go routine that is used for collecting DNS blocklist information for each IP address. 
+This microservice also implements a job queue using a Golang channel serviced by an asyncronous go routine that is used for collecting DNS blocklist information for each IP address. The default queue length is 100, but can be overridden by setting a new value in the **queue_length** attribute of the **job_queue** section of the **config.json** file.
 
 ### Authentication
 Basic authentication is also implemented to protect the primary GraphQL interface by only allowing authenticated users to access the API. Currently the only user that will be authenticated to use the API is the user with the following credentials:
@@ -77,14 +80,12 @@ The GraphQL API is served by default on port **8080**, but the port can be confi
 
 Besides the **authenticate** mutation the GraphQL interface provides 2 primary end points:
 
-- **enqueue** - mutation for asyncrhonously collecting DNS blocklist details for one or more IPV4 addresses
-- **getIPDetails** - query for obtaining blocklist details for a single IPV4 address
+- **enqueue** - mutation for asyncrhonously queue a job to the job queue to collect DNS blocklist details for one or more IPV4 addresses. 
+- **getIPDetails** - query for obtaining blocklist details for a single IPV4 address. This returns 
 
 ### GraphQL Schema
 The following is the GraphQL schema implemented by this microservice:
 ```
-
-
 """
 Timestamp data type
 """
@@ -123,7 +124,8 @@ type DNSBlockListRecord {
   updated_at: Time!
 
   """
-  Indicates if the ip_address is on the blocklist
+  Indicates if the ip_address is on the blocklist. For detailed information on the response code values, 
+  you can refer to https://www.spamhaus.org/faq/section/DNSBL%20Usage#200
   """
   response_code: String!
 
@@ -138,7 +140,8 @@ Coding Challenge Queries
 """
 type Query {
   """
-  Provides DNS blocklist information for the specified IPV4 address
+  Provides DNS blocklist information for the specified IPV4 address. If the ip address has not been previously specified
+  in a preivious enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
   """
   getIPDetails(ip: String): DNSBlockListRecord
 }
@@ -154,7 +157,8 @@ type Mutation {
 
   """
   Used to queue an array of IPV4 addresses onto the aysnchronous job queue so that blocklist information can be obtained
-  for those IP Addresses
+  for those IP Addresses. If the queue is full, then an error will be returned indicating the queue is currently full, and that a retry
+  should be attempted.
   """
   enqueue(ip: [String!]!): Boolean
 }
