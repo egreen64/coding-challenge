@@ -72,10 +72,16 @@ func findConfig() string {
 
 //File struct
 type File struct {
+	Server   Server   `json:"server"`
 	Logger   Logger   `json:"logger"`
 	Database Database `json:"db"`
 	Dnsbl    Dnsbl    `json:"dnsbl"`
 	Auth     Auth     `json:"auth"`
+}
+
+//Server type
+type Server struct {
+	ListeningPort int `json:"listening_port"`
 }
 
 //Logger type

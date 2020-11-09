@@ -1,4 +1,7 @@
 { 
+    "server" : {
+        "listening_port": 8080
+    },
     "logger": {
         "log_file_name": "./coding_challenge.log"
     },

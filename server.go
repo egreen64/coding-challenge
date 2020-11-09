@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -19,8 +20,6 @@ import (
 	"github.com/egreen64/codingchallenge/jobqueue"
 	"github.com/go-chi/chi"
 )
-
-const defaultPort = "8080"
 
 func main() {
 
@@ -95,7 +94,7 @@ func main() {
 	//Initialize listening port
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = defaultPort
+		port = strconv.Itoa(config.Server.ListeningPort)
 	}
 
 	//Start server on listening port
