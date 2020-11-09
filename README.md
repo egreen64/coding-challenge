@@ -166,7 +166,7 @@ type Mutation {
 ```
 
 ## Tests
-A set of system leve tests have been implemented to perform postiive and negative testing of the GraphQL interface. Additionaly, unit tests have been written to test the supporint packages.
+A set of system leve tests have been implemented to perform postiive and negative testing of the GraphQL interface. Additionaly, unit tests have been written to test the supporting packages.
 
 ## How to Install
 This package can be installed with the go get command:
@@ -187,7 +187,7 @@ This package can be built with the go command:
     
 This package can be tested with the go command:
 
-    go test -v    
+    go test -v ./...   
     
 ### Local Build and Test
 In order to do a local build and test, you need to make sure that you have Docker installed on the same machine you installed this package. 
