@@ -17,6 +17,7 @@
     },
     "auth" : {
         "username": "secureworks",
-        "password": "supersecret"
+        "password": "supersecret",
+        "expiration_duration": 15
     }
 }

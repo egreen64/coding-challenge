@@ -21,7 +21,7 @@ func (r *mutationResolver) Authenticate(ctx context.Context, username string, pa
 		return nil, gqlerror.Errorf("invalid credentials")
 	}
 
-	jwt, err := auth.CreateJWT(username, password)
+	jwt, err := auth.CreateJWT(username, password, r.Config.Server.ListeningPort)
 	authToken := "Bearer " + jwt
 
 	return &model.AuthToken{BearerToken: authToken}, err

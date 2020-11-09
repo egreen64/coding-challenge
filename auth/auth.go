@@ -16,10 +16,6 @@ type contextKey struct {
 	name string
 }
 
-const (
-	expirationTimePeriod = 15
-)
-
 var (
 	signingKey      = []byte("secret")
 	authTokenCtxKey = &contextKey{"auth-token"}
@@ -32,13 +28,13 @@ type customClaims struct {
 }
 
 //CreateJWT function
-func CreateJWT(username string, password string) (string, error) {
+func CreateJWT(username string, password string, expirationDuration int) (string, error) {
 	// Create the Claims
 	claims := customClaims{
 		username,
 		password,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(expirationTimePeriod * time.Second).Unix(),
+			ExpiresAt: time.Now().Add(time.Duration(expirationDuration) * time.Minute).Unix(),
 		},
 	}
 

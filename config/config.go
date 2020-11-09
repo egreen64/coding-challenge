@@ -103,6 +103,7 @@ type Dnsbl struct {
 
 //Auth type
 type Auth struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	ExpirationDuration int    `json:"expiration_duration"`
 }
