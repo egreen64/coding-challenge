@@ -53,7 +53,7 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 	}
 
 	if !r.JobQueue.AddJob(ip) {
-		graphql.AddError(ctx, gqlerror.Errorf("unable to queue job for ip addresses: %+v. queue is curently full. please try again", ip))
+		return nil, gqlerror.Errorf("unable to queue job queue is curently full. please try again")
 	}
 
 	result := true

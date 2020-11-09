@@ -273,6 +273,30 @@ func TestCodingChallenge(t *testing.T) {
 		require.Equal(t, false, resp.Enqueue)
 	})
 
+	t.Run("enqueue_failure_invalid_queue_busy", func(t *testing.T) {
+		var resp struct {
+			Enqueue bool
+		}
+
+		mutation := `
+			mutation {
+				enqueue(ip: ["127.0.0.255"])
+			}
+		`
+
+		var err error
+		count := 0
+		for {
+			if err = c.Post(mutation, &resp, client.AddHeader("Authorization", authResp.Authenticate.BearerToken)); err != nil {
+				break
+			}
+			resp.Enqueue = false
+			count++
+		}
+		require.EqualError(t, err, `[{"message":"unable to queue job queue is curently full. please try again","path":["enqueue"]}]`)
+		require.Equal(t, false, resp.Enqueue)
+	})
+
 	t.Run("get_ip_details_success_127.0.0.2", func(t *testing.T) {
 
 		var resp struct {
