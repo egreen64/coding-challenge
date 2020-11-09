@@ -15,7 +15,7 @@ import (
 type JobQueue struct {
 	dnsbl       *dnsbl.Dnsbl
 	db          *db.Database
-	jobChannel  chan string
+	jobChannel  chan []string
 	stopChannel chan struct{}
 	wg          sync.WaitGroup
 }
@@ -25,7 +25,7 @@ func NewJobQueue(dnsbl *dnsbl.Dnsbl, db *db.Database) *JobQueue {
 	jobQueue := JobQueue{
 		dnsbl:       dnsbl,
 		db:          db,
-		jobChannel:  make(chan string, 100),
+		jobChannel:  make(chan []string, 100),
 		stopChannel: make(chan struct{}),
 		wg:          sync.WaitGroup{},
 	}
@@ -59,11 +59,13 @@ func (jq *JobQueue) Stop() bool {
 }
 
 //AddJob function
-func (jq *JobQueue) AddJob(ipAddress string) bool {
+func (jq *JobQueue) AddJob(ipAddresses []string) bool {
 	select {
-	case jq.jobChannel <- ipAddress:
+	case jq.jobChannel <- ipAddresses:
+		log.Printf("queued job for ip addresses: %+v\n", ipAddresses)
 		return true
 	default:
+		log.Printf("queue busy - unable to queue job for ip addresses: %+v\n", ipAddresses)
 		return false
 	}
 }
@@ -76,25 +78,29 @@ func (jq *JobQueue) worker() {
 			log.Println("job queue stopping")
 			return
 
-		case ipAddr := <-jq.jobChannel:
-			log.Printf("job queue processing job with ip address: %s\n", ipAddr)
+		case ipAddrs := <-jq.jobChannel:
+			log.Printf("job queue begin processing job with ip addresses: %+v\n", ipAddrs)
 
-			resp := jq.dnsbl.Lookup(ipAddr)
+			for _, ipAddr := range ipAddrs {
+				resp := jq.dnsbl.Lookup(ipAddr)
 
-			respCode := "NXDOMAIN"
-			if resp.Responses[0].Resp != "" {
-				respCode = resp.Responses[0].Resp
+				respCode := "NXDOMAIN"
+				if resp.Responses[0].Resp != "" {
+					respCode = resp.Responses[0].Resp
+				}
+
+				DNSBlockListRecord := model.DNSBlockListRecord{
+					UUID:         uuid.New().String(),
+					IPAddress:    ipAddr,
+					ResponseCode: respCode,
+				}
+
+				jq.db.UpsertRecord(&DNSBlockListRecord)
+
+				log.Printf("job queue completed processing for ip address: %s\n", ipAddr)
 			}
 
-			DNSBlockListRecord := model.DNSBlockListRecord{
-				UUID:         uuid.New().String(),
-				IPAddress:    ipAddr,
-				ResponseCode: respCode,
-			}
-
-			jq.db.UpsertRecord(&DNSBlockListRecord)
-
-			log.Printf("job queue completed processing job with ip address: %s\n", ipAddr)
+			log.Printf("job queue completed processing job with ip addresses: %+v\n", ipAddrs)
 		}
 	}
 }

@@ -21,7 +21,7 @@ func (r *mutationResolver) Authenticate(ctx context.Context, username string, pa
 		return nil, gqlerror.Errorf("invalid credentials")
 	}
 
-	jwt, err := auth.CreateJWT(username, password, r.Config.Server.ListeningPort)
+	jwt, err := auth.CreateJWT(username, password, r.Config.Auth.ExpirationDuration)
 	authToken := "Bearer " + jwt
 
 	return &model.AuthToken{BearerToken: authToken}, err
@@ -52,15 +52,8 @@ func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) (*bool, err
 		return nil, gqlerror.Errorf("validation error(s)")
 	}
 
-	jobsNotAdded := false
-	for _, ipAddr := range ip {
-		if !r.JobQueue.AddJob(ipAddr) {
-			jobsNotAdded = true
-			graphql.AddError(ctx, gqlerror.Errorf("unable to queue job for ip address: %s. queue is curently full. please try again", ipAddr))
-		}
-	}
-	if jobsNotAdded {
-		return nil, gqlerror.Errorf("scheduling error(s)")
+	if !r.JobQueue.AddJob(ip) {
+		graphql.AddError(ctx, gqlerror.Errorf("unable to queue job for ip addresses: %+v. queue is curently full. please try again", ip))
 	}
 
 	result := true
