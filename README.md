@@ -81,9 +81,9 @@ The GraphQL API is served by default on port **8080**, but the port can be confi
 
 Besides the **authenticate** mutation the GraphQL interface provides 2 primary end points:
 
-- **enqueue** - mutation for asyncrhonously queue a job to the job queue to collect DNS blocklist details for one or more IPV4 addresses. 
+- **enqueue** - mutation to asyncrhonously queue a job to the job queue to collect DNS blocklist details for one or more IPV4 addresses. 
 - **getIPDetails** - query for obtaining blocklist details for a single IPV4 address. This returns a DNSBlocklistRecord which contains a response_code
-                     field providing blocklist information about the IPV4 address. Detailed information about the response_code can be found at                                          **[zen.spamhaus.org](https://www.spamhaus.org/faq/section/DNSBL%20Usage#200)**
+                     field providing blocklist information about the IPV4 address. Detailed information about the response_code values can be found at                                          **[zen.spamhaus.org](https://www.spamhaus.org/faq/section/DNSBL%20Usage#200)**
 
 ### GraphQL Schema
 The following is the GraphQL schema implemented by this microservice:
@@ -227,7 +227,7 @@ This script uses Docker to run the container **coding_challenge:latest** that wa
 
 ## Helm Chart
 
-This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart for this project was create with Helm V3. The helm chart can be found in the project's **/helm** directory.
+This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart for this project was created with Helm V3. The helm chart can be found in the project's **/helm** directory.
 
 To deploy the helm chart use the following helm CLI command from a machine where helm is installed:
     
