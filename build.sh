@@ -8,7 +8,7 @@ rm -rf ./coding_challenge.db
 rm -rf ./codingchallenge
 
 #build and test coding challenge project
-docker run --rm -v "$PWD":/usr/src/codingchallenge -w /usr/src/codingchallenge -e GOOS=linux golang:1.15.3 go build;go test -v ./...
+docker run --rm -v "$PWD":/usr/src/codingchallenge -w /usr/src/codingchallenge -e GOOS=linux golang:1.15.3 ./go_build.sh
 
 #build docker image
 docker build -t coding_challenge:latest .
