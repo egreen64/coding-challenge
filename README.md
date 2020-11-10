@@ -189,14 +189,22 @@ This package can be tested with the go command:
 
     go test -v ./...   
     
-### Local Build and Test
+### Local Build and Test using Docker
 In order to do a local build and test, you need to make sure that you have Docker installed on the same machine you installed this package. 
 
 This package can be built using the following supplied script:
 
     ./build.sh
     
-This script will build the package, run the test scripts and then create a Docker named **coding_challenge:latest**
+This script will build the package, run the test scripts and then create a Docker image named **coding_challenge:latest**
+
+Additionally the **build.sh** script can push the image to Docker hub.
+
+You will need to uncomment the last 2 lines of the **build.sh** script to perform the docker push as well as change the repository name from **egreen6464** to your own repoistory name:
+    
+    #push docker image
+    #docker tag coding_challenge:latest egreen6464/coding_challenge
+    #docker push egreen6464/coding_challenge:latest
 
 ## How to Run
 Just as this package can be bult and tested either natively or locally, the package can also be run either natively or locally.
@@ -207,14 +215,19 @@ This packge can be run natively with the following command:
 
     ./codingchallenge
     
-### Running Locally
+### Running Locally using Docker
 
 This packge can be run locally with the following supplied script:
 
     ./run.sh [port]
-    where **port** is the port number that can be specfieid to override the default port of **8080**
-    
+   
+where **port** is the port number that can be specfieid to override the default port of **8080**
+
 This script uses Docker to run the container **coding_challenge:latest** that was created previously by the local build.
+
+## Helm Chart
+
+This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart can be found in the project's **/helm** directory.
 
 # Have fun and enjoy!
   
