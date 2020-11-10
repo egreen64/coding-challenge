@@ -91,7 +91,8 @@ func main() {
 	//Initialize graphql handler functions
 	router.Handle("/graphql", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", srv)
-	router.HandleFunc("/healthcheck", HealthCheck)
+	router.HandleFunc("/liveness", LivenessCheck)
+	router.HandleFunc("/readiness", ReadinessCheck)
 
 	//Initialize listening port
 	port := os.Getenv("PORT")
@@ -107,8 +108,18 @@ func main() {
 	}
 }
 
-//HealthCheck function
-func HealthCheck(res http.ResponseWriter, req *http.Request) {
+//LivenessCheck function
+func LivenessCheck(res http.ResponseWriter, req *http.Request) {
+	res.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+	res.Header().Add("Access-Control-Allow-Origin", "*")
+	res.Header().Add("Access-Control-Allow-Methods", "*")
+	res.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	res.Header().Add("Access-Control-Max-Age", "3600")
+	fmt.Fprintf(res, "ok")
+}
+
+//ReadinessCheck function
+func ReadinessCheck(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 	res.Header().Add("Access-Control-Allow-Origin", "*")
 	res.Header().Add("Access-Control-Allow-Methods", "*")
