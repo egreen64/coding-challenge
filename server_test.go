@@ -293,7 +293,7 @@ func TestCodingChallenge(t *testing.T) {
 			resp.Enqueue = false
 			count++
 		}
-		require.EqualError(t, err, `[{"message":"unable to queue job queue is curently full. please try again","path":["enqueue"]}]`)
+		require.EqualError(t, err, `[{"message":"unable to queue job - job queue is curently full. please try again","path":["enqueue"]}]`)
 		require.Equal(t, false, resp.Enqueue)
 	})
 
