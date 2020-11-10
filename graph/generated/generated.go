@@ -230,9 +230,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `
-
-"""
+	{Name: "graph/schema.graphqls", Input: `"""
 Timestamp data type
 """
 scalar Time
@@ -250,8 +248,7 @@ type AuthToken {
 }
 
 """
-Contains information about whether or not an IPV4 address in
-on a blocklist
+Contains information about whether or not an IPV4 address is on a blocklist
 """
 type DNSBlockListRecord {
   """
@@ -270,7 +267,8 @@ type DNSBlockListRecord {
   updated_at: Time!
 
   """
-  Indicates if the ip_address is on the blocklist
+  Indicates if the ip_address is on the blocklist. For detailed information on the response code values, 
+  you can refer to https://www.spamhaus.org/faq/section/DNSBL%20Usage#200
   """
   response_code: String!
 
@@ -286,7 +284,7 @@ Coding Challenge Queries
 type Query {
   """
   Provides DNS blocklist information for the specified IPV4 address. If the ip address has not been previously specified
-  in a preivious enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
+  in a previous enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
   """
   getIPDetails(ip: String): DNSBlockListRecord
 }
