@@ -14,5 +14,5 @@ docker run --rm -v "$PWD":/usr/src/codingchallenge -w /usr/src/codingchallenge -
 docker build -t coding_challenge:latest .
 
 #push docker image
-docker tag coding_challenge:latest egreen6464/coding_challenge
-docker push egreen6464/coding_challenge:latest
+#docker tag coding_challenge:latest egreen6464/coding_challenge
+#docker push egreen6464/coding_challenge:latest
