@@ -7,8 +7,9 @@ This project implements a **GraphQL** based microservice written entirely in Go.
 This microservice is implemented in Golang and uses the **[gqlgen](https://github.com/99designs/gqlgen)**  package as a framework for implementing the GraphQL interface. The microservice also uses a backend database for storing the requested DNS blocklist details for each of the IP addreses provided via the GraphQL interface. Currently blocklist information is only collected for IPV4 addresses. 
 
 ### Packages
-The implementation of this microservice depends on the following 3rd party Golang packages to provide its capabilities:
-- **[gqlgen](https://github.com/99designs/gqlgen)**  - Framework to generate Golang code in order build to implement graphql servers
+The implementation of this microservice depends on the following 3rd party Golang packages to provide its capabilities. These packages are managed via **go mod**  and are maintained in the **go.mod** file. The following are the primary packages used by this microservice:
+
+- **[gqlgen](https://github.com/99designs/gqlgen)**  - Framework to generate Golang code in order build and implement graphql servers
 - **[sqlite3](https://github.com/mattn/go-sqlite3)**  - sqlite3 database driver
 - **[godnsbl](https://github.com/nerdbaggy/godnsbl)** - DNS Blocklist lookup functionality
 - **[jwt-go](https://github.com/dgrijalva/jwt-go)**  - Library for creating and validating JWTs used by this application to provide authentication
@@ -54,7 +55,7 @@ The microservice generates log messages to a log file using the standard golang 
 This log file can be used for debugging and informational purposes.
 
 ### DNSBL
-IP Addresses can be checked against one or more blocklist domains. As per the requirements of this coding challenge, the blocklist domain being used is **[zen.spamhaus.org](https://www.spamhaus.org/faq/section/DNSBL%20Usage)** as configured in the **blocklist_domain** attribute of the **dnsbl** section of the **config.json** file.
+IP Addresses can be checked against one or more blocklist domains. As per the requirements of this coding challenge, the blocklist domain being used is **[zen.spamhaus.org](https://www.spamhaus.org/faq/section/DNSBL%20Usage)** as configured in the **blocklist_domains** attribute of the **dnsbl** section of the **config.json** file.
 
 ### Database
 The database used for storing the blocklist details is an sqlite3 database in a database file named **coding_challenge.db**. The file name of the database can be changed by specifying a new dabase file name in the **db_path** attribute of the **db** section of the **config.json** file. 
@@ -76,7 +77,7 @@ The microservice makes use of an HTTP Authentication middleware handler that wra
 Additionaly validation includes checking to see if the token has expired. Currently the token has a default expiration duration of 15 mintues. The default expiration duration can be changed by modifying the **expiration_duration** attribute of the **auth** section of the **config.json** file.
 
 ### GraphQL API
-The GraphQL API is served by default on port **8080**, but the port can be configued by changing the **listeing_port** attribute in the **server** section of the **config.json** configuration file.
+The GraphQL API is served by default on port **8080**, but the port can be configued by changing the **listening_port** attribute in the **server** section of the **config.json** configuration file.
 
 Besides the **authenticate** mutation the GraphQL interface provides 2 primary end points:
 
@@ -105,8 +106,7 @@ type AuthToken {
 }
 
 """
-Contains information about whether or not an IPV4 address in
-on a blocklist
+Contains information about whether or not an IPV4 address is on a blocklist
 """
 type DNSBlockListRecord {
   """
@@ -142,7 +142,7 @@ Coding Challenge Queries
 type Query {
   """
   Provides DNS blocklist information for the specified IPV4 address. If the ip address has not been previously specified
-  in a preivious enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
+  in a previous enqueue mutation, then a DNSBlockListRecord will be returned with an empty uuid and a response_code of "NXDOMAIN"
   """
   getIPDetails(ip: String): DNSBlockListRecord
 }
@@ -166,7 +166,7 @@ type Mutation {
 ```
 
 ## Tests
-A set of system leve tests have been implemented to perform postiive and negative testing of the GraphQL interface. Additionaly, unit tests have been written to test the supporting packages.
+A set of system level tests have been implemented to perform postive and negative testing of the GraphQL interface. Additionally, unit tests have been written to test the supporting packages.
 
 ## How to Install
 This package can be installed with the go get command:
@@ -207,7 +207,7 @@ You will need to uncomment the last 2 lines of the **build.sh** script to perfor
     #docker push egreen6464/coding_challenge:latest
 
 ## How to Run
-Just as this package can be bult and tested either natively or locally, the package can also be run either natively or locally.
+Just as this package can be built and tested either natively or locally, the package can also be run either natively or locally.
 
 ### Running Natively
 
@@ -217,11 +217,11 @@ This packge can be run natively with the following command:
     
 ### Running Locally using Docker
 
-This packge can be run locally with the following supplied script:
+This package can be run locally with the following supplied script:
 
     ./run.sh [port]
    
-where **port** is the port number that can be specfieid to override the default port of **8080**
+where **port** is the port number that can be specifieid to override the default port of **8080**
 
 This script uses Docker to run the container **coding_challenge:latest** that was created previously by the local build.
 
