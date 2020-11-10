@@ -221,7 +221,7 @@ This package can be run locally with the following supplied script:
 
     ./run.sh [port]
    
-where **port** is the port number that can be specifieid to override the default port of **8080**
+where **port** is the port number that can be specifieid to override the default listening port of **8080**
 
 This script uses Docker to run the container **coding_challenge:latest** that was created previously by the local build.
 
@@ -229,7 +229,7 @@ This script uses Docker to run the container **coding_challenge:latest** that wa
 
 This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart for this project was created with Helm V3. The helm chart can be found in the project's **/helm** directory.
 
-To deploy the helm chart use the following helm CLI command from a machine where helm is installed:
+To deploy the helm chart, use the following helm CLI command from a machine where helm is installed:
     
     helm install codingchallenge ./helm
 
