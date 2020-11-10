@@ -227,7 +227,11 @@ This script uses Docker to run the container **coding_challenge:latest** that wa
 
 ## Helm Chart
 
-This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart can be found in the project's **/helm** directory.
+This project also includes a Helm chart for deploying the docker image **egreen6464/coding_challenge:latest**, which is created during the local build, to a k8s cluster. The helm chart for this project was create with Helm V3. The helm chart can be found in the project's **/helm** directory.
+
+To deploy the helm chart use the following helm CLI command from a machine where helm is installed:
+    
+    helm install codingchallenge ./helm
 
 # Have fun and enjoy!
   
