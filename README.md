@@ -233,5 +233,12 @@ To deploy the helm chart use the following helm CLI command from a machine where
     
     helm install codingchallenge ./helm
 
+To establish connectivity to the container, you need to execute the commands in the Notes that are displayed after sucessfully executing the above command. Here are the commands that should be displayed in the Notes:
+
+    export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=codingchallenge,app.kubernetes.io/instance=codingchallenge" -o jsonpath="{.items[0].metadata.name}")
+    export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+    echo "Visit http://127.0.0.1:8080 to use your application"
+    kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+    
 # Have fun and enjoy!
   
